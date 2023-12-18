@@ -1,0 +1,75 @@
+/*!
+Theme Name: Moniz Child theme
+Theme URI: https://github.com/gigabite-hub
+Template: moniz
+Author: Advanced Datalytics
+Author URI: https://github.com/gigabite-hub
+Description: This is a Child theme for Moniz Wordpress theme.
+Version: 1.0
+License: GNU General Public License v2 or later
+License URI: LICENSE
+Text Domain: moniz-child
+*/
+
+:root {
+  --moniz-primary: #17b4cb !important;
+  --moniz-primary-rgb: 23, 180, 203 !important;
+}
+
+.analytics-cards-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.analytics-card {
+  width: 48%;
+  box-sizing: border-box;
+  border-radius: 15px;
+  padding: 15px;
+  margin-bottom: 10px;
+  background-color: #f7f8fa;
+}
+
+.analytics-card h4 {
+  margin: 0;
+}
+
+.analytics-card p {
+  margin-bottom: 0;
+}
+.analytics-card:last-child {
+  flex-basis: 100%;
+}
+
+.ai-marklab-newsltter .footer-widget__newsletter-btn {
+  height: 42px;
+  width: 40px;
+  justify-content: center;
+}
+
+.blog-sidebar .container .row .col-xl-4.col-lg-5 {
+  display: none;
+}
+
+.blog-sidebar .container .row .col-xl-8.col-lg-7 {
+  width: 100%!important;
+}
+
+@media only screen and (max-width: 768px) {
+  .analytics-card {
+      flex-basis: 100%;
+  }
+}
+
+@media (min-width: 1200px) {
+  .col-xl-4.col-lg-5 {
+      display: none;
+  }
+}
+
+@media (min-width: 992px) and (max-width: 1199.98px) {
+  .col-xl-4.col-lg-5 {
+      display: none;
+  }
+}
