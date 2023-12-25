@@ -56,9 +56,42 @@ Text Domain: moniz-child
   width: 100%!important;
 }
 
+.wc-block-cart-item__quantity,
+.product-details__content__quantity {
+    display: none;
+}
+
+.ingredient-table table {
+	width: 100%;
+	border-collapse: collapse;
+	margin-bottom: 20px;
+}
+
+.ingredient-table th, td {
+	padding: 10px;
+	text-align: left;
+	border: 1px solid #ddd;
+	font-size: 12px;
+}
+
+.ingredient-table th {
+	background-color: #f2f2f2;
+}
+
+.ingredient-table tr:nth-child(even) {
+	background-color: #f9f9f9;
+}
+
+.ingredient-table tr:hover {
+	background-color: #f5f5f5;
+}
+
 @media only screen and (max-width: 768px) {
   .analytics-card {
       flex-basis: 100%;
+  }
+  .ingredient-table th, .ingredient-table td {
+	font-size: 10px;
   }
 }
 
