@@ -38,9 +38,9 @@ Text Domain: moniz-child
 .analytics-card p {
   margin-bottom: 0;
 }
-.analytics-card:last-child {
+/* .analytics-card:last-child {
   flex-basis: 100%;
-}
+} */
 
 .ai-marklab-newsltter .footer-widget__newsletter-btn {
   height: 42px;
