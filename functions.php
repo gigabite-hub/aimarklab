@@ -29,28 +29,22 @@ if (!function_exists('moniz_child_thm_parent_css')):
 endif;
 add_action('wp_enqueue_scripts', 'moniz_child_thm_parent_css');
 
+
 /**
- * Add custom fields to WooCommerce My Account page
+ * Add custom fields to WooCommerce My Account Edit Account page
  */
 function custom_woocommerce_edit_account_form() {
     // Get the current user ID
     $user_id = get_current_user_id();
 
-    // Get saved values if they exist
-    $page_id = get_user_meta($user_id, 'page_id', true);
-    $page_access_token = get_user_meta($user_id, 'page_access_token', true);
+    // Get saved value if it exists
+    $page_name = get_user_meta($user_id, 'page_name', true);
 
-    // Output the Page ID field
+    // Output the Page Name field
     ?>
     <p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
-        <label for="page_id"><?php _e('Page ID', 'your-text-domain'); ?></label>
-        <input type="text" class="woocommerce-Input woocommerce-Input--text input-text" name="page_id" id="page_id" value="<?php echo esc_attr($page_id); ?>" />
-    </p>
-
-    <!-- Output the Page Access Token field -->
-    <p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
-        <label for="page_access_token"><?php _e('Page Access Token', 'your-text-domain'); ?></label>
-        <input type="text" class="woocommerce-Input woocommerce-Input--text input-text" name="page_access_token" id="page_access_token" value="<?php echo esc_attr($page_access_token); ?>" />
+        <label for="page_name"><?php _e('Page Name', 'your-text-domain'); ?></label>
+        <input type="text" class="woocommerce-Input woocommerce-Input--text input-text" name="page_name" id="page_name" value="<?php echo esc_attr($page_name); ?>" />
     </p>
 
     <?php
@@ -64,12 +58,8 @@ add_action('woocommerce_edit_account_form', 'custom_woocommerce_edit_account_for
  * @param int $user_id User ID.
  */
 function custom_save_woocommerce_account_fields($user_id) {
-    if (isset($_POST['page_id'])) {
-        update_user_meta($user_id, 'page_id', sanitize_text_field($_POST['page_id']));
-    }
-
-    if (isset($_POST['page_access_token'])) {
-        update_user_meta($user_id, 'page_access_token', sanitize_text_field($_POST['page_access_token']));
+    if (isset($_POST['page_name'])) {
+        update_user_meta($user_id, 'page_name', sanitize_text_field($_POST['page_name']));
     }
 }
 
@@ -122,75 +112,100 @@ function analytics_tab_content()
 
 	$user_id = get_current_user_id();
 
-	$page_id = get_user_meta($user_id, 'page_id', true);
-	$page_access_token = get_user_meta($user_id, 'page_access_token', true);
+    $accessToken = 'EAAEqipn0O4cBO0YBHOQe9WnbrZCFjuugZAKWUQfBh3nhZCnIw6YKGdOOqCkWm4SKZBF4qRCyHshYtLnP4GSTM8FDun7dc2lhJBCu11m40n4xynNvnwGUpshnjlt9ymXzuYZAImBY3SapD0TupDBgaeann4txIjqA3TbHvQfDsujGhFXY9szWe3arK';
 
-	// Now you can use $page_id and $page_access_token as needed
+    // API endpoint
+    $apiUrl = 'https://graph.facebook.com/v18.0/me/accounts?access_token=' . $accessToken;
 
-	if (empty($page_id) || empty($page_access_token)) {
-        echo '<p style="color: red;">Please add your Page ID and Access Token in the <a href="'.home_url("/").'my-account/edit-account/">My Account details</a> page.</p>';
+    // Make the API request
+    $response = file_get_contents($apiUrl);
+
+    // Check for errors
+    if ($response === false) {
+        die('Error fetching data');
+    }
+
+    // Decode JSON response
+    $data = json_decode($response, true);
+
+    // Specify the page name to filter
+    $pageName = get_user_meta($user_id, 'page_name', true);
+
+    if (empty($pageName)) {
+        echo '<p style="color: red;">Your (Page Name) is missing Or Invalid <a href="'.home_url("/").'my-account/edit-account/">My Account details</a> page.</p>';
         return;
     }
-   
-	// Get total followers
-	$followersEndpoint = "https://graph.facebook.com/v13.0/{$page_id}?fields=fan_count&access_token={$page_access_token}";
-	$followersResponse = json_decode(file_get_contents($followersEndpoint), true);
-	$totalFollowers = $followersResponse['fan_count'];
 
-	// Get total page likes
-	$pageLikesEndpoint = "https://graph.facebook.com/v13.0/{$page_id}/insights/page_fans?access_token={$page_access_token}";
-	$pageLikesResponse = json_decode(file_get_contents($pageLikesEndpoint), true);
-	$totalPageLikes = $pageLikesResponse['data'][0]['values'][0]['value'];
+    // Filter data to get only the record with the specified page name
+    $filteredData = array_filter($data['data'], function ($page) use ($pageName) {
+        return $page['name'] === $pageName;
+    });
 
-	// Get total page views
-	$pageViewsEndpoint = "https://graph.facebook.com/v13.0/{$page_id}/insights/page_views_total?access_token={$page_access_token}";
-	$pageViewsResponse = json_decode(file_get_contents($pageViewsEndpoint), true);
-	$totalPageViews = $pageViewsResponse['data'][0]['values'][0]['value'];
+    foreach ($filteredData as $page) {
+        $id = $page['id'];
+        $name = $page['name'];
+        $accessToken = $page['access_token'];
+    
+        // Get total followers
+        $followersEndpoint = "https://graph.facebook.com/v13.0/{$id}?fields=fan_count&access_token={$accessToken}";
+        $followersResponse = json_decode(file_get_contents($followersEndpoint), true);
+        $totalFollowers = $followersResponse['fan_count'];
 
-	// Get total page engagement
-	$pageEngagementEndpoint = "https://graph.facebook.com/v13.0/{$page_id}/insights/page_engaged_users?access_token={$page_access_token}";
-	$pageEngagementResponse = json_decode(file_get_contents($pageEngagementEndpoint), true);
-	$totalPageEngagement = $pageEngagementResponse['data'][0]['values'][0]['value'];
-		
+        // Get total page likes
+        $pageLikesEndpoint = "https://graph.facebook.com/v13.0/{$id}/insights/page_fans?access_token={$accessToken}";
+        $pageLikesResponse = json_decode(file_get_contents($pageLikesEndpoint), true);
+        $totalPageLikes = $pageLikesResponse['data'][0]['values'][0]['value'];
 
-		// Display the results
-// 		echo "Total Followers: " . formatNumber($totalFollowers) . PHP_EOL;
-// 		echo "Total Page Likes: " . formatNumber($totalPageLikes) . PHP_EOL;
-// 		echo "Total Page Views: " . formatNumber($totalPageViews) . PHP_EOL;
-// 		echo "Total Page Engagement: " . formatNumber($totalPageEngagement) . PHP_EOL;
+        // Get total page views
+        $pageViewsEndpoint = "https://graph.facebook.com/v13.0/{$id}/insights/page_views_total?access_token={$accessToken}";
+        $pageViewsResponse = json_decode(file_get_contents($pageViewsEndpoint), true);
+        $totalPageViews = $pageViewsResponse['data'][0]['values'][0]['value'];
 
-// 		echo "Total Followers: " . formatNumber($totalFollowers) . ' (' . calculatePercentage($totalFollowers, $totalFollowers) . ')' . PHP_EOL;
-// 		echo "Total Page Likes: " . formatNumber($totalPageLikes) . ' (' . calculatePercentage($totalPageLikes, $totalFollowers) . ')' . PHP_EOL;
-// 		echo "Total Page Views: " . formatNumber($totalPageViews) . ' (' . calculatePercentage($totalPageViews, $totalFollowers) . ')' . PHP_EOL;
-// 		echo "Total Page Engagement: " . formatNumber($totalPageEngagement) . ' (' . calculatePercentage($totalPageEngagement, $totalFollowers) . ')' . PHP_EOL;
+        // Get total page engagement
+        $pageEngagementEndpoint = "https://graph.facebook.com/v13.0/{$id}/insights/page_engaged_users?access_token={$accessToken}";
+        $pageEngagementResponse = json_decode(file_get_contents($pageEngagementEndpoint), true);
+        $totalPageEngagement = $pageEngagementResponse['data'][0]['values'][0]['value'];
+            
+
+            // Display the results
+    // 		echo "Total Followers: " . formatNumber($totalFollowers) . PHP_EOL;
+    // 		echo "Total Page Likes: " . formatNumber($totalPageLikes) . PHP_EOL;
+    // 		echo "Total Page Views: " . formatNumber($totalPageViews) . PHP_EOL;
+    // 		echo "Total Page Engagement: " . formatNumber($totalPageEngagement) . PHP_EOL;
+
+    // 		echo "Total Followers: " . formatNumber($totalFollowers) . ' (' . calculatePercentage($totalFollowers, $totalFollowers) . ')' . PHP_EOL;
+    // 		echo "Total Page Likes: " . formatNumber($totalPageLikes) . ' (' . calculatePercentage($totalPageLikes, $totalFollowers) . ')' . PHP_EOL;
+    // 		echo "Total Page Views: " . formatNumber($totalPageViews) . ' (' . calculatePercentage($totalPageViews, $totalFollowers) . ')' . PHP_EOL;
+    // 		echo "Total Page Engagement: " . formatNumber($totalPageEngagement) . ' (' . calculatePercentage($totalPageEngagement, $totalFollowers) . ')' . PHP_EOL;
 
 
-    // HTML structure for three cards
-    echo '<div class="analytics-cards-container">
-        <div class="analytics-card followers">
-            <p>Followers</p>
-            <h4>'.formatNumber($totalFollowers) . PHP_EOL.'</h4>
-            <p>'.calculatePercentage($totalFollowers, $totalFollowers).'</p>
-        </div>
+        // HTML structure for three cards
+        echo '<div class="analytics-cards-container">
+            <div class="analytics-card followers">
+                <p>Followers</p>
+                <h4>'.formatNumber($totalFollowers) . PHP_EOL.'</h4>
+                <p>'.calculatePercentage($totalFollowers, $totalFollowers).'</p>
+            </div>
 
-        <div class="analytics-card engagement">
-        <p>Engagement</p>
-        <h4>'.formatNumber($totalPageEngagement) . PHP_EOL.'</h4>
-        <p>'.calculatePercentage($totalPageEngagement, $totalFollowers).'</p>
-        </div>
+            <div class="analytics-card engagement">
+            <p>Engagement</p>
+            <h4>'.formatNumber($totalPageEngagement) . PHP_EOL.'</h4>
+            <p>'.calculatePercentage($totalPageEngagement, $totalFollowers).'</p>
+            </div>
 
-        <div class="analytics-card total-views">
-        <p>Total Views</p>
-        <h4>'.formatNumber($totalPageViews) . PHP_EOL.'</h4>
-        <p>'.calculatePercentage($totalPageViews, $totalFollowers).'</p>
-        </div>
+            <div class="analytics-card total-views">
+            <p>Total Views</p>
+            <h4>'.formatNumber($totalPageViews) . PHP_EOL.'</h4>
+            <p>'.calculatePercentage($totalPageViews, $totalFollowers).'</p>
+            </div>
 
-        <div class="analytics-card total-likes">
-        <p>Total Likes</p>
-        <h4>'.formatNumber($totalPageLikes) . PHP_EOL.'</h4>
-        <p>'.calculatePercentage($totalPageLikes, $totalFollowers).'</p>
-        </div>
-    </div>';
+            <div class="analytics-card total-likes">
+            <p>Total Likes</p>
+            <h4>'.formatNumber($totalPageLikes) . PHP_EOL.'</h4>
+            <p>'.calculatePercentage($totalPageLikes, $totalFollowers).'</p>
+            </div>
+        </div>';
+    }
 }
 // Add Ingredients Tab
 add_action('init', 'add_ingredients_endpoint');
