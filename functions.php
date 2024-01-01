@@ -50,7 +50,7 @@ function custom_woocommerce_edit_account_form() {
     <?php
 }
 
-add_action('woocommerce_edit_account_form', 'custom_woocommerce_edit_account_form');
+// add_action('woocommerce_edit_account_form', 'custom_woocommerce_edit_account_form');
 
 /**
  * Save custom fields on My Account save
@@ -63,7 +63,7 @@ function custom_save_woocommerce_account_fields($user_id) {
     }
 }
 
-add_action('woocommerce_save_account_details', 'custom_save_woocommerce_account_fields');
+// add_action('woocommerce_save_account_details', 'custom_save_woocommerce_account_fields');
 
 // Custom Tabs
 add_action('init', 'add_analytics_endpoint');
@@ -129,10 +129,11 @@ function analytics_tab_content()
     $data = json_decode($response, true);
 
     // Specify the page name to filter
-    $pageName = get_user_meta($user_id, 'page_name', true);
+//     $pageName = get_user_meta($user_id, 'page_name', true);
+	$pageName = get_field('page_name', 'user_' . $user_id);
 
     if (empty($pageName)) {
-        echo '<p style="color: red;">Your (Page Name) is missing Or Invalid <a href="'.home_url("/").'my-account/edit-account/">My Account details</a> page.</p>';
+        echo '<p style="color: red;">Your (Page Name) is missing Or Invalid please contact to Support Team.</p>';
         return;
     }
 
@@ -211,28 +212,28 @@ function analytics_tab_content()
 add_action('init', 'add_ingredients_endpoint');
 function add_ingredients_endpoint()
 {
-    add_rewrite_endpoint('ingredients-support', EP_ROOT | EP_PAGES);
+    add_rewrite_endpoint('food-vendors', EP_ROOT | EP_PAGES);
 }
 
 add_filter('query_vars', 'ingredients_query_vars', 0);
 function ingredients_query_vars($vars)
 {
-    $vars[] = 'ingredients-support';
+    $vars[] = 'food-vendors';
     return $vars;
 }
 
 add_filter('woocommerce_account_menu_items', 'add_new_ingredients_tab');
 function add_new_ingredients_tab($items)
 {
-    $items['ingredients-support'] = 'Ingredients';
+    $items['food-vendors'] = 'Food Vendors';
     return $items;
 }
 
-add_action('woocommerce_account_ingredients-support_endpoint', 'ingredients_tab_content');
+add_action('woocommerce_account_food-vendors_endpoint', 'ingredients_tab_content');
 
 function ingredients_tab_content()
 {
-    echo '<h4><strong>Ingredients</strong></h4>';
+    echo '<h4><strong>Food Vendors</strong></h4>';
 
     // HTML structure for your content
     echo '<table class="ingredient-table">
